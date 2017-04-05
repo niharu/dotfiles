@@ -302,7 +302,7 @@ if has('vim_starting')
   set runtimepath+=~/.vim/bundle/neobundle.vim
 endif
 
-" neobundle.vimの初期化 
+" neobundle.vimの初期化
 " NeoBundleを更新するための設定
 call neobundle#begin(expand('~/.vim/bundle'))
 NeoBundleFetch 'Shougo/neobundle.vim'
@@ -319,4 +319,5 @@ filetype plugin indent on
 " インストールのチェック
 NeoBundleCheck
 
+" Git Commit
 " Copyright (C) 2009-2016 KaoriYa/MURAOKA Taro
