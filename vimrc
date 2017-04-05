@@ -318,6 +318,6 @@ filetype plugin indent on
 
 " インストールのチェック
 NeoBundleCheck
-
+" _Commit
 " Git Commit
 " Copyright (C) 2009-2016 KaoriYa/MURAOKA Taro
