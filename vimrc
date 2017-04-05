@@ -320,4 +320,5 @@ filetype plugin indent on
 NeoBundleCheck
 " _Commit
 " Git Commit
+" Commit pullrequest
 " Copyright (C) 2009-2016 KaoriYa/MURAOKA Taro
