@@ -1,271 +1,104 @@
-scriptencoding utf-8
-" vim:set ts=8 sts=2 sw=2 tw=0: (この行に関しては:help modelineを参照)
-"
-" An example for a Japanese version vimrc file.
-" 日本語版のデフォルト設定ファイル(vimrc) - Vim 7.4
-"
-" Last Change: 30-Oct-2016.
-" Maintainer:  MURAOKA Taro <koron.kaoriya@gmail.com>
-"
-" 解説:
-" このファイルにはVimの起動時に必ず設定される、編集時の挙動に関する設定が書
-" かれています。GUIに関する設定はgvimrcに書かかれています。
-"
-" 個人用設定は_vimrcというファイルを作成しそこで行ないます。_vimrcはこのファ
-" イルの後に読込まれるため、ここに書かれた内容を上書きして設定することが出来
-" ます。_vimrcは$HOMEまたは$VIMに置いておく必要があります。$HOMEは$VIMよりも
-" 優先され、$HOMEでみつかった場合$VIMは読込まれません。
-"
-" 管理者向けに本設定ファイルを直接書き換えずに済ませることを目的として、サイ
-" トローカルな設定を別ファイルで行なえるように配慮してあります。Vim起動時に
-" サイトローカルな設定ファイル($VIM/vimrc_local.vim)が存在するならば、本設定
-" ファイルの主要部分が読み込まれる前に自動的に読み込みます。
-"
-" 読み込み後、変数g:vimrc_local_finishが非0の値に設定されていた場合には本設
-" 定ファイルに書かれた内容は一切実行されません。デフォルト動作を全て差し替え
-" たい場合に利用して下さい。
-"
-" 参考:
-"   :help vimrc
-"   :echo $HOME
-"   :echo $VIM
-"   :version
+" All system-wide defaults are set in $VIMRUNTIME/debian.vim and sourced by
+" the call to :runtime you can find below.  If you wish to change any of those
+" settings, you should do it in this file (/etc/vim/vimrc), since debian.vim
+" will be overwritten everytime an upgrade of the vim packages is performed.
+" It is recommended to make changes after sourcing debian.vim since it alters
+" the value of the 'compatible' option.
 
-"---------------------------------------------------------------------------
-" サイトローカルな設定($VIM/vimrc_local.vim)があれば読み込む。読み込んだ後に
-" 変数g:vimrc_local_finishに非0な値が設定されていた場合には、それ以上の設定
-" ファイルの読込を中止する。
-if 1 && filereadable($VIM . '/vimrc_local.vim')
-  unlet! g:vimrc_local_finish
-  source $VIM/vimrc_local.vim
-  if exists('g:vimrc_local_finish') && g:vimrc_local_finish != 0
-    finish
-  endif
+" This line should not be removed as it ensures that various options are
+" properly set to work with the Vim-related packages available in Debian.
+runtime! debian.vim
+
+" Uncomment the next line to make Vim more Vi-compatible
+" NOTE: debian.vim sets 'nocompatible'.  Setting 'compatible' changes numerous
+" options, so any other options should be set AFTER setting 'compatible'.
+"set compatible
+
+" Vim5 and later versions support syntax highlighting. Uncommenting the next
+" line enables syntax highlighting by default.
+if has("syntax")
+  syntax on
 endif
 
-"---------------------------------------------------------------------------
-" ユーザ優先設定($HOME/.vimrc_first.vim)があれば読み込む。読み込んだ後に変数
-" g:vimrc_first_finishに非0な値が設定されていた場合には、それ以上の設定ファ
-" イルの読込を中止する。
-if 1 && exists('$HOME') && filereadable($HOME . '/.vimrc_first.vim')
-  unlet! g:vimrc_first_finish
-  source $HOME/.vimrc_first.vim
-  if exists('g:vimrc_first_finish') && g:vimrc_first_finish != 0
-    finish
-  endif
+" If using a dark background within the editing area and syntax highlighting
+" turn on this option as well
+"set background=dark
+
+" Uncomment the following to have Vim jump to the last position when
+" reopening a file
+"if has("autocmd")
+"  au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+"endif
+
+" Uncomment the following to have Vim load indentation rules and plugins
+" according to the detected filetype.
+"if has("autocmd")
+"  filetype plugin indent on
+"endif
+
+" The following are commented out as they cause vim to behave a lot
+" differently from regular Vi. They are highly recommended though.
+"set showcmd		" Show (partial) command in status line.
+"set showmatch		" Show matching brackets.
+"set ignorecase		" Do case insensitive matching
+"set smartcase		" Do smart case matching
+"set incsearch		" Incremental search
+"set autowrite		" Automatically save before commands like :next and :make
+"set hidden		" Hide buffers when they are abandoned
+"set mouse=a		" Enable mouse usage (all modes)
+
+" Source a global configuration file if available
+if filereadable("/etc/vim/vimrc.local")
+  source /etc/vim/vimrc.local
 endif
 
-" plugins下のディレクトリをruntimepathへ追加する。
-for s:path in split(glob($VIM.'/plugins/*'), '\n')
-  if s:path !~# '\~$' && isdirectory(s:path)
-    let &runtimepath = &runtimepath.','.s:path
-  end
-endfor
-unlet s:path
+"Note: Skip initialization for vim-tiny or vim-small.
+if 0 | endif
 
-"---------------------------------------------------------------------------
-" 日本語対応のための設定:
-"
-" ファイルを読込む時にトライする文字エンコードの順序を確定する。漢字コード自
-" 動判別機能を利用する場合には別途iconv.dllが必要。iconv.dllについては
-" README_w32j.txtを参照。ユーティリティスクリプトを読み込むことで設定される。
-source $VIM/plugins/kaoriya/encode_japan.vim
-" メッセージを日本語にする (Windowsでは自動的に判断・設定されている)
-if !(has('win32') || has('mac')) && has('multi_lang')
-  if !exists('$LANG') || $LANG.'X' ==# 'X'
-    if !exists('$LC_CTYPE') || $LC_CTYPE.'X' ==# 'X'
-      language ctype ja_JP.eucJP
-    endif
-    if !exists('$LC_MESSAGES') || $LC_MESSAGES.'X' ==# 'X'
-      language messages ja_JP.eucJP
-    endif
-  endif
-endif
-" MacOS Xメニューの日本語化 (メニュー表示前に行なう必要がある)
-if has('mac')
-  set langmenu=japanese
-endif
-" 日本語入力用のkeymapの設定例 (コメントアウト)
-if has('keymap')
-  " ローマ字仮名のkeymap
-  "silent! set keymap=japanese
-  "set iminsert=0 imsearch=0
-endif
-" 非GUI日本語コンソールを使っている場合の設定
-if !has('gui_running') && &encoding != 'cp932' && &term == 'win32'
-  set termencoding=cp932
+if &compatible
+  set nocompatible               " Be iMproved
 endif
 
-"---------------------------------------------------------------------------
-" メニューファイルが存在しない場合は予め'guioptions'を調整しておく
-if 1 && !filereadable($VIMRUNTIME . '/menu.vim') && has('gui_running')
-  set guioptions+=M
-endif
+" Required:
+set runtimepath+=~/.vim/bundle/neobundle.vim/
 
-"---------------------------------------------------------------------------
-" Bram氏の提供する設定例をインクルード (別ファイル:vimrc_example.vim)。これ
-" 以前にg:no_vimrc_exampleに非0な値を設定しておけばインクルードはしない。
-if 1 && (!exists('g:no_vimrc_example') || g:no_vimrc_example == 0)
-  if &guioptions !~# "M"
-    " vimrc_example.vimを読み込む時はguioptionsにMフラグをつけて、syntax on
-    " やfiletype plugin onが引き起こすmenu.vimの読み込みを避ける。こうしない
-    " とencに対応するメニューファイルが読み込まれてしまい、これの後で読み込
-    " まれる.vimrcでencが設定された場合にその設定が反映されずメニューが文字
-    " 化けてしまう。
-    set guioptions+=M
-    source $VIMRUNTIME/vimrc_example.vim
-    set guioptions-=M
-  else
-    source $VIMRUNTIME/vimrc_example.vim
-  endif
-endif
+" Required:
+call neobundle#begin(expand('~/.vim/bundle/'))
 
-"---------------------------------------------------------------------------
-" 検索の挙動に関する設定:
-"
-" 検索時に大文字小文字を無視 (noignorecase:無視しない)
-set ignorecase
-" 大文字小文字の両方が含まれている場合は大文字小文字を区別
-set smartcase
+" Let NeoBundle manage NeoBundle
+" Required:
+NeoBundleFetch 'Shougo/neobundle.vim'
 
-"---------------------------------------------------------------------------
-" 編集に関する設定:
-"
-" タブの画面上での幅
-set tabstop=8
-" タブをスペースに展開しない (expandtab:展開する)
-set noexpandtab
-" 自動的にインデントする (noautoindent:インデントしない)
-set autoindent
-" バックスペースでインデントや改行を削除できるようにする
-set backspace=indent,eol,start
-" 検索時にファイルの最後まで行ったら最初に戻る (nowrapscan:戻らない)
-set wrapscan
-" 括弧入力時に対応する括弧を表示 (noshowmatch:表示しない)
-set showmatch
-" コマンドライン補完するときに強化されたものを使う(参照 :help wildmenu)
-set wildmenu
-" テキスト挿入中の自動折り返しを日本語に対応させる
-set formatoptions+=mM
+" My Bundles here:
+" Refer to |:NeoBundle-examples|.
+" Note: You don't set neobundle setting in .gvimrc!
+NeoBundle 'scrooloose/nerdtree'
+NeoBundle 'davidhalter/jedi-vim'
 
-"---------------------------------------------------------------------------
-" GUI固有ではない画面表示の設定:
-"
-" 行番号を非表示 (number:表示)
-set nonumber
-" ルーラーを表示 (noruler:非表示)
-set ruler
-" タブや改行を表示 (list:表示)
-set nolist
-" どの文字でタブや改行を表示するかを設定
-"set listchars=tab:>-,extends:<,trail:-,eol:<
-" 長い行を折り返して表示 (nowrap:折り返さない)
-set wrap
-" 常にステータス行を表示 (詳細は:he laststatus)
-set laststatus=2
-" コマンドラインの高さ (Windows用gvim使用時はgvimrcを編集すること)
-set cmdheight=2
-" コマンドをステータス行に表示
-set showcmd
-" タイトルを表示
-set title
-" 画面を黒地に白にする (次行の先頭の " を削除すれば有効になる)
-"colorscheme evening " (Windows用gvim使用時はgvimrcを編集すること)
+call neobundle#end()
 
-"---------------------------------------------------------------------------
-" ファイル操作に関する設定:
-"
-" バックアップファイルを作成しない (次行の先頭の " を削除すれば有効になる)
-"set nobackup
+" Required:
+filetype plugin indent on
 
+" If there are uninstalled bundles found on startup,
+" this will conveniently prompt you to install them.
+NeoBundleCheck
 
-"---------------------------------------------------------------------------
-" ファイル名に大文字小文字の区別がないシステム用の設定:
-"   (例: DOS/Windows/MacOS)
-"
-if filereadable($VIM . '/vimrc') && filereadable($VIM . '/ViMrC')
-  " tagsファイルの重複防止
-  set tags=./tags,tags
-endif
+set background=dark
+colorscheme hybrid
 
-"---------------------------------------------------------------------------
-" コンソールでのカラー表示のための設定(暫定的にUNIX専用)
-if has('unix') && !has('gui_running')
-  let s:uname = system('uname')
-  if s:uname =~? "linux"
-    set term=builtin_linux
-  elseif s:uname =~? "freebsd"
-    set term=builtin_cons25
-  elseif s:uname =~? "Darwin"
-    set term=beos-ansi
-  else
-    set term=builtin_xterm
-  endif
-  unlet s:uname
-endif
-
-"---------------------------------------------------------------------------
-" コンソール版で環境変数$DISPLAYが設定されていると起動が遅くなる件へ対応
-if !has('gui_running') && has('xterm_clipboard')
-  set clipboard=exclude:cons\\\|linux\\\|cygwin\\\|rxvt\\\|screen
-endif
-
-"---------------------------------------------------------------------------
-" プラットホーム依存の特別な設定
-
-" WinではPATHに$VIMが含まれていないときにexeを見つけ出せないので修正
-if has('win32') && $PATH !~? '\(^\|;\)' . escape($VIM, '\\') . '\(;\|$\)'
-  let $PATH = $VIM . ';' . $PATH
-endif
-
-if has('mac')
-  " Macではデフォルトの'iskeyword'がcp932に対応しきれていないので修正
-  set iskeyword=@,48-57,_,128-167,224-235
-endif
-
-"---------------------------------------------------------------------------
-" KaoriYaでバンドルしているプラグインのための設定
-
-" autofmt: 日本語文章のフォーマット(折り返し)プラグイン.
-set formatexpr=autofmt#japanese#formatexpr()
-
-" vimdoc-ja: 日本語ヘルプを無効化する.
-if kaoriya#switch#enabled('disable-vimdoc-ja')
-  let &rtp = join(filter(split(&rtp, ','), 'v:val !~ "[/\\\\]plugins[/\\\\]vimdoc-ja"'), ',')
-endif
-
-" vimproc: 同梱のvimprocを無効化する
-if kaoriya#switch#enabled('disable-vimproc')
-  let &rtp = join(filter(split(&rtp, ','), 'v:val !~ "[/\\\\]plugins[/\\\\]vimproc$"'), ',')
-endif
-
-" go-extra: 同梱の vim-go-extra を無効化する
-if kaoriya#switch#enabled('disable-go-extra')
-  let &rtp = join(filter(split(&rtp, ','), 'v:val !~ "[/\\\\]plugins[/\\\\]golang$"'), ',')
-endif
-
-" 追加設定
-set number
-set ambiwidth=double
-set tabstop=4
-set shiftwidth=4
-set nrformats-=octal
-set hidden
-set whichwrap=b,s,[,],<,>
-set backspace=indent,eol,start
-set encoding=utf-8
-
-" ツールバー等を非表示
-set guioptions-=m
+" ツールバーを削除
 set guioptions-=T
-set guioptions-=r
-set guioptions-=R
-set guioptions-=l
-set guioptions-=L
 
-map :tree :NERDTree
+"メニューを削除
+set guioptions-=m
 
-" タブ操作
+set guifont=DejaVu\ Sans\ Mono\ 13
+
+cd ~
+map <F2> :NERDTree<CR>
+"autocmd vimenter * NERDTree
+
 nnoremap s <Nop>
 nnoremap sj <C-w>j
 nnoremap sk <C-w>k
@@ -289,36 +122,7 @@ nnoremap sT :<C-u>Unite tab<CR>
 nnoremap ss :<C-u>sp<CR>
 nnoremap sv :<C-u>vs<CR>
 nnoremap sq :<C-u>q<CR>
-nnoremap sQ :<C-u>bd<CR>
+nnoremap sQ :<C-u>q!<CR>
 nnoremap sb :<C-u>Unite buffer_tab -buffer-name=file<CR>
 nnoremap sB :<C-u>Unite buffer -buffer-name=file<CR>
 
-" 起動時にNERDTreeを起動
-autocmd vimenter * NERDTree
-
-" vim起動時のみruntimepathにneobundle.vimを追加
-if has('vim_starting')
-  set nocompatible
-  set runtimepath+=~/.vim/bundle/neobundle.vim
-endif
-
-" neobundle.vimの初期化
-" NeoBundleを更新するための設定
-call neobundle#begin(expand('~/.vim/bundle'))
-NeoBundleFetch 'Shougo/neobundle.vim'
-
-" 読み込むプラグインを記載
-NeoBundle 'Shougo/unite.vim'
-NeoBundle 'itchyny/lightline.vim'
-NeoBundle 'scrooloose/nerdtree'
-call neobundle#end()
-
-" 読み込んだプラグインも含め、ファイルタイプの検出、ファイルタイプ別プラグイン/インデントを有効化する
-filetype plugin indent on
-
-" インストールのチェック
-NeoBundleCheck
-" _Commit
-" Git Commit
-" Commit pullrequest
-" Copyright (C) 2009-2016 KaoriYa/MURAOKA Taro
